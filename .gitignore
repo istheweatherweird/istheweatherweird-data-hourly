@@ -1,0 +1,6 @@
+.*
+!.gitignore
+*profile
+www
+notebooks
+csv
