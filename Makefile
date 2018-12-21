@@ -1,12 +1,12 @@
 YEAR_MAX=2018
 
 #ORD
-STATION=725300-94846
-YEAR_MIN=1946
+#STATION=725300-94846
+#YEAR_MIN=1946
 
 # SFO
-# STATION=724940-23234
-# YEAR_MIN=1973
+STATION=724940-23234
+YEAR_MIN=1973
 
 # OKC
 #STATION=723530-13967
@@ -31,8 +31,10 @@ $(GZS):
 	wget -nv -O www/`basename $@` ftp://ftp.ncdc.noaa.gov/pub/data/noaa/$(@:www/$(STATION)-%.gz=%)/$(@:www/%=%)
 
 csv/$(STATION).csv: $(GZS) isd2csv.sh isd2csv.py
+	mkdir csv
 	./isd2csv.sh $(STATION) | python isd2csv.py > $@
 
 $(CSVS): csv/$(STATION).csv isd2hourly.py
+	mkdir -p `dirname $@`
 	# grep for header and matching dates
 	grep '^\(date_hour\|[[:digit:]]\{4\}'$(@:csv/$(STATION)/%.csv=%)'\)' $< | python isd2hourly.py > $@
