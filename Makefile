@@ -1,40 +1,21 @@
-YEAR_MAX=2018
+STATIONS=724940-23234 725300-94846 723530-13967 744860-94789
 
-#ORD
-#STATION=725300-94846
-#YEAR_MIN=1946
+$(shell mkdir -p www $(STATIONS:%=csv/%))
 
-# SFO
-STATION=724940-23234
-YEAR_MIN=1973
+MAKEFILES=$(STATIONS:%=makefiles/%.mk)
 
-# OKC
-#STATION=723530-13967
-#YEAR_MIN=1941
+all: $(MAKEFILES) $(STATIONS)
 
-include default_profile
-export
+www/isd-inventory.csv:
+	curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv > $@
 
-# sequence of all years
-YEARS=$(shell seq $(YEAR_MIN) $(YEAR_MAX))
-# sequence of all gz files
-GZS = $(YEARS:%=www/$(STATION)-%.gz)
-
-# sequence of all day-of-year csv files
+# sequence of all day-of-year csv files                                                                                   
 MONTHDAYS = $(shell python monthdays.py)
-CSVS = $(MONTHDAYS:%=csv/$(STATION)/%.csv)
 
-all: $(GZS) csv/$(STATION).csv $(CSVS)
+$(MAKEFILES): template.mk www/isd-inventory.csv station_years.sh
+	set -e; \
+	export STATION=`basename $@ .mk`; \
+	export YEARS=`./station_years.sh $$STATION | tr '\n' ' '`; \
+	    cat $< | envsubst > $@
 
-$(GZS):
-	mkdir -p `dirname $@`
-	wget -nv -O www/`basename $@` ftp://ftp.ncdc.noaa.gov/pub/data/noaa/$(@:www/$(STATION)-%.gz=%)/$(@:www/%=%)
-
-csv/$(STATION).csv: $(GZS) isd2csv.sh isd2csv.py
-	mkdir csv
-	./isd2csv.sh $(STATION) | python isd2csv.py > $@
-
-$(CSVS): csv/$(STATION).csv isd2hourly.py
-	mkdir -p `dirname $@`
-	# grep for header and matching dates
-	grep '^\(date_hour\|[[:digit:]]\{4\}'$(@:csv/$(STATION)/%.csv=%)'\)' $< | python isd2hourly.py > $@
+include $(MAKEFILES)
