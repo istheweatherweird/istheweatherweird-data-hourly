@@ -1,4 +1,4 @@
-YEAR_MAX=2018
+#YEAR_MAX=2018
 
 #ORD
 #STATION=725300-94846
@@ -6,7 +6,7 @@ YEAR_MAX=2018
 
 # SFO
 STATION=724940-23234
-YEAR_MIN=1973
+#YEAR_MIN=1973
 
 # OKC
 #STATION=723530-13967
@@ -16,9 +16,12 @@ include default_profile
 export
 
 # sequence of all years
-YEARS=$(shell seq $(YEAR_MIN) $(YEAR_MAX))
+#YEARS=$(shell seq $(YEAR_MIN) $(YEAR_MAX))
+STATION_YEARS=$(shell ./station_years.sh $(STATION))
+$(info $(STATION_YEARS))
+
 # sequence of all gz files
-GZS = $(YEARS:%=www/$(STATION)-%.gz)
+GZS = $(STATION_YEARS:%=www/%.gz)
 
 # sequence of all day-of-year csv files
 MONTHDAYS = $(shell python monthdays.py)
