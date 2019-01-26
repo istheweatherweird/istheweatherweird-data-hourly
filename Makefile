@@ -1,27 +1,18 @@
-STATION=724940-23234
+STATIONS=724940-23234
 
-# sequence of station-years, e.g. 724940-23234-1987, from the isd-inventory file
-STATION_YEARS=$(shell ./station_years.sh $(STATION))
-#$(info $(STATION_YEARS))
+$(shell mkdir -p www csv/$(STATIONS))
 
-# sequence of all gz files
-GZS = $(STATION_YEARS:%=www/%.gz)
+all: makefiles/$(STATIONS).mk $(STATIONS)
 
-# sequence of all day-of-year csv files
-MONTHDAYS = $(shell python monthdays.py)
-CSVS = $(MONTHDAYS:%=csv/$(STATION)/%.csv)
+www/isd-inventory.csv:
+	curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv > $@
 
-all: $(GZS) csv/$(STATION).csv $(CSVS)
+makefiles/$(STATIONS).mk: template.mk www/isd-inventory.csv station_years.sh
+	set -e; \
+	export STATION=`basename $@ .mk`; \
+	export YEARS=`./station_years.sh $$STATION | tr '\n' ' '`; \
+	    cat $< | envsubst > $@
 
-$(GZS):
-	mkdir -p www
-	wget -nv -O www/`basename $@` ftp://ftp.ncdc.noaa.gov/pub/data/noaa/$(@:www/$(STATION)-%.gz=%)/$(@:www/%=%)
+include makefiles/$(STATIONS).mk
 
-csv/$(STATION).csv: $(GZS) isd2csv.sh isd2csv.py
-	mkdir -p csv
-	./isd2csv.sh $(STATION) | python isd2csv.py > $@
 
-$(CSVS): csv/$(STATION).csv isd2hourly.py
-	mkdir -p `dirname $@`
-	# grep for header and matching dates
-	grep '^\(date_hour\|[[:digit:]]\{4\}'$(@:csv/$(STATION)/%.csv=%)'\)' $< | python isd2hourly.py > $@
