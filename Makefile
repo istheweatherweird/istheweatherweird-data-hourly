@@ -1,24 +1,8 @@
-#YEAR_MAX=2018
-
-#ORD
-#STATION=725300-94846
-#YEAR_MIN=1946
-
-# SFO
 STATION=724940-23234
-#YEAR_MIN=1973
 
-# OKC
-#STATION=723530-13967
-#YEAR_MIN=1941
-
-include default_profile
-export
-
-# sequence of all years
-#YEARS=$(shell seq $(YEAR_MIN) $(YEAR_MAX))
+# sequence of station-years, e.g. 724940-23234-1987, from the isd-inventory file
 STATION_YEARS=$(shell ./station_years.sh $(STATION))
-$(info $(STATION_YEARS))
+#$(info $(STATION_YEARS))
 
 # sequence of all gz files
 GZS = $(STATION_YEARS:%=www/%.gz)
@@ -30,11 +14,11 @@ CSVS = $(MONTHDAYS:%=csv/$(STATION)/%.csv)
 all: $(GZS) csv/$(STATION).csv $(CSVS)
 
 $(GZS):
-	mkdir -p `dirname $@`
+	mkdir -p www
 	wget -nv -O www/`basename $@` ftp://ftp.ncdc.noaa.gov/pub/data/noaa/$(@:www/$(STATION)-%.gz=%)/$(@:www/%=%)
 
 csv/$(STATION).csv: $(GZS) isd2csv.sh isd2csv.py
-	mkdir csv
+	mkdir -p csv
 	./isd2csv.sh $(STATION) | python isd2csv.py > $@
 
 $(CSVS): csv/$(STATION).csv isd2hourly.py
