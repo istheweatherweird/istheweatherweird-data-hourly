@@ -8,4 +8,5 @@ else
     curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv.z | zcat > $file
 fi
 
-cat $file | cut -d, -f1-3 | sed 's/"//g;s/,/-/g' | grep $1
+REGEX="\\("$(echo $@ | sed 's/ /\\|/g')"\\)"
+cat $file | cut -d, -f1-3 | sed 's/"//g;s/,/-/g' | grep $REGEX
