@@ -1,13 +1,19 @@
-STATIONS=724940-23234 725300-94846 723530-13967 744860-94789 726400-14839 725200-94823 724030-93738 722950-23174 722430-12960 722780-23183
+STATIONS=$(shell tail -n+2 stations_in.csv | cut -d, --output-delimiter='-' -f2,3)
 
 $(shell mkdir -p www $(STATIONS:%=csv/%))
 
 MAKEFILES=$(STATIONS:%=makefiles/%.mk)
 
-all: $(MAKEFILES) $(STATIONS)
+all: $(MAKEFILES) $(STATIONS) csv/stations.csv
 
 www/isd-inventory.csv:
 	curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv > $@
+
+www/isd-history.csv:
+	curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-history.csv > $@
+
+csv/stations.csv: stations_out.py stations_in.csv www/isd-history.csv
+	python $^ > $@
 
 # sequence of all day-of-year csv files                                                                                   
 MONTHDAYS = $(shell python monthdays.py)
