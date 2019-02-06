@@ -12,7 +12,10 @@ www/isd-inventory.csv:
 www/isd-history.csv:
 	curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-history.csv > $@
 
-csv/stations.csv: stations_out.py stations_in.csv www/isd-history.csv
+www/airports.dat:
+	curl https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat > $@
+
+csv/stations.csv: stations_out.py stations_in.csv www/isd-history.csv www/airports.dat
 	python $^ > $@
 
 # sequence of all day-of-year csv files                                                                                   
