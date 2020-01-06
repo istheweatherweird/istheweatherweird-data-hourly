@@ -11,8 +11,11 @@ GZS = $(STATION_YEARS:%=www/%.gz)
 # output csv files, one for each month-day
 CSVS = $(MONTHDAYS:%=csv/$(STATION)/%.csv)
 
+# use bash for the empty file check below
+SHELL := /bin/bash
 $(GZS):
 	wget -nv -O $@ ftp://ftp.ncdc.noaa.gov/pub/data/noaa/`basename $@ .gz | cut -d- -f3`/$(@:www/%=%)
+	[ -s $@ ] || { echo "wget wrote an empty file!"; exit 1; }
 
 csv/$(STATION).csv: $(GZS) isd2csv.sh isd2csv.py
 	./isd2csv.sh `basename $@ .csv` | python isd2csv.py > $@
