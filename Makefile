@@ -6,6 +6,8 @@ MAKEFILES=$(STATIONS:%=makefiles/%.mk)
 
 all: $(MAKEFILES) $(STATIONS) csv/stations.csv
 
+makefiles: $(MAKEFILES)
+
 www/isd-inventory.csv:
 	curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv > $@
 
