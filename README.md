@@ -35,7 +35,10 @@ To run the workflow for the first time
     - Create the outputs described above
  
 3. Add it to git
-    - By default all data is ignored by git. In order to save the results you must manually `git add` the output files
+    - By default all data is ignored by git. In order to save the results you must manually `git add` the output files, for example:
+    ```
+    git add -f csv/010080-99999/*.csv
+    ```
     - To save space in the repository we do not add the intermediate files
     - When updating (see below), git will track the hitsory of the CSV files which is not necessary. If we run out of space or the repository is unbearably slow we could try deleting histories using `git filter-branch`
 
