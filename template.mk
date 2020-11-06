@@ -22,7 +22,7 @@ $(GZS):
 	[ -s $@ ] || { echo "wget wrote an empty file!"; exit 1; }
 
 csv/$(STATION).csv: $(GZS) isd2csv.sh isd2csv.py
-	./isd2csv.sh $$STATION $$STATION2 | python isd2csv.py > $@
+	./isd2csv.sh $STATION $STATION2 | python isd2csv.py > $@
 
 $(CSVS): csv/$(STATION).csv isd2hourly.py
 	# grep for header and matching dates
