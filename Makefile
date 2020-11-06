@@ -23,10 +23,15 @@ csv/stations.csv: stations_out.py stations_in.csv www/isd-history.csv www/airpor
 # sequence of all day-of-year csv files                                                                                   
 MONTHDAYS = $(shell python monthdays.py)
 
-$(MAKEFILES): template.mk www/isd-inventory.csv station_years.sh
+# stations-in.csv is technically an input here in order to look up a potential station2
+# but adding it would force rewriting the station makefiles after each station is added
+# so if a station2 is added, its makefile will need to be explicitly rebuilt
+$(MAKEFILES): template.mk www/isd-inventory.csv station_years.sh station2.py
 	set -e; \
 	export STATION=`basename $@ .mk`; \
 	export YEARS=`./station_years.sh $$STATION | tr '\n' ' '`; \
+	export STATION2=`python station2.py stations_in.csv $$STATION`; \
+	export YEARS2=`./station_years.sh $$STATION2 | tr '\n' ' '`; \
 	    cat $< | envsubst > $@
 
 include $(MAKEFILES)
