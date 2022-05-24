@@ -4,7 +4,7 @@ $(shell mkdir -p www www/inventories makefiles $(STATIONS:%=csv/%))
 
 MAKEFILES=$(STATIONS:%=makefiles/%.mk)
 
-all: $(MAKEFILES) $(STATIONS) csv/stations.csv
+all: $(MAKEFILES) $(STATIONS) csv/stations.csv inventory.mk
 
 makefiles: $(MAKEFILES)
 
@@ -14,10 +14,8 @@ www/isd_years.txt:
 inventory.mk: inventory_template.mk  www/isd_years.txt
 	set -e; \
 	export YEARS=`cat www/isd_years.txt | tr '\n' ' '`; \
-	    cat $< | envsubst > $@
-
-include inventory.mk
-
+	# envsubst '$YEARS' only substitutes the YEARS variable, leaving the others alone
+	    cat $< | envsubst '$YEARS' > $@
 
 www/isd-history.csv:
 	curl ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-history.csv > $@
@@ -31,15 +29,17 @@ csv/stations.csv: stations_out.py stations_in.csv www/isd-history.csv www/airpor
 # sequence of all day-of-year csv files                                                                                   
 MONTHDAYS = $(shell python monthdays.py)
 
+include inventory.mk
+
 # stations-in.csv is technically an input here in order to look up a potential station2
 # but adding it would force rewriting the station makefiles after each station is added
 # so if a station2 is added, its makefile will need to be explicitly rebuilt
-$(MAKEFILES): template.mk www/isd_inventory.txt station_years.sh station2.py
-	set -e; \
-	export STATION=`basename $@ .mk`; \
-	export YEARS=`./station_years.sh $$STATION | tr '\n' ' '`; \
-	export STATION2=`python station2.py stations_in.csv $$STATION`; \
-	export YEARS2=`./station_years.sh $$STATION2 | tr '\n' ' '`; \
-	    cat $< | envsubst > $@
+#$(MAKEFILES): template.mk www/isd_inventory.txt station_years.sh station2.py
+#	set -e; \
+#	export STATION=`basename $@ .mk`; \
+#	export YEARS=`./station_years.sh $$STATION | tr '\n' ' '`; \
+#	export STATION2=`python station2.py stations_in.csv $$STATION`; \
+#	export YEARS2=`./station_years.sh $$STATION2 | tr '\n' ' '`; \
+#	    cat $< | envsubst > $@
 
-include $(MAKEFILES)
+#include $(MAKEFILES)
